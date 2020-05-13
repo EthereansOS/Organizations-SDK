@@ -1,0 +1,19 @@
+{
+  "name": "dfo-hub",
+  "version": "0.0.5",
+  "description": "DFOHub SDK",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify index.js -o dist/dfo-hub.js && browserify index.js | uglifyjs > dist/dfo-hub.min.js"
+  },
+  "author": "Marco Vasapollo | Alessandro Mario Laganà Toschi | bro@buidl.life",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/b-u-i-d-l/dfo-hub-sdk.git"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.1",
+    "uglifyjs": "^2.4.11"
+  }
+}
