@@ -1,16 +1,14 @@
 var configuration = require('./configuration.json');
 
-var globalScope = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
-
 module.exports = function Web3BlockchainProvider(engine) {
     var context = this;
 
-    engine.currentProvider && engine.currentProvider.setMaxListeners && engine.currentProvider.setMaxListeners(0);
-    engine.eth.transactionBlockTimeout = 999999999;
-    engine.eth.transactionPollingTimeout = new Date().getTime();
+    context.attach = function attach(dfoHub) {
+        engine.eth.dfoHub = dfoHub;
+    };
 
     context.getNetworkId = function getNetworkId() {
-        return engine.eth.net.getId()
+        return engine.eth.net.getId();
     };
 
     context.sha3 = function sha3(data) {
@@ -18,22 +16,33 @@ module.exports = function Web3BlockchainProvider(engine) {
     };
 
     context.newContract = function newContract(abi, address) {
-        return new engine.eth.Contract(abi, address);
+        var contract = new engine.eth.Contract(abi, address);
+        contract.transactionBlockTimeout = 999999999;
+        contract.transactionPollingTimeout = new Date().getTime();
+        return contract;
     };
 
     context.getPastLogs = function getPastLogs(params) {
         return engine.eth.getPastLogs(params);
     };
 
-    context.decodeAbi = function decodeAbi(type, value) {
-        return engine.eth.abi["decodeParameter" + ((typeof type).toLowerCase() === 'string' ? '' : 's')](type, value);
-    };
-
     context.encodeAbi = function encodeAbi(type, value) {
         return engine.eth.abi["encodeParameter" + ((typeof type).toLowerCase() === 'string' ? '' : 's')](type, value);
     };
 
-    context.blockchainCall = async function blockchainCall(call) {
+    context.decodeAbi = function decodeAbi(type, value) {
+        return engine.eth.abi["decodeParameter" + ((typeof type).toLowerCase() === 'string' ? '' : 's')](type, value);
+    };
+
+    context.callContract = function callContract(contract, methodName) {
+        var args = [contract.methods[methodName]];
+        for(var i = 2; i < arguments.length; i++) {
+            args.push(arguments[i]);
+        }
+        return blockchainCall.apply(context, args);
+    }
+
+    var blockchainCall = async function blockchainCall(call) {
         var args = [];
         if (arguments.length > 1) {
             for (var i = 1; i < arguments.length; i++) {
@@ -41,24 +50,24 @@ module.exports = function Web3BlockchainProvider(engine) {
             }
         }
         var method = (call.implementation ? call.get : call.new ? call.new : call).apply(call, args);
-        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' ? method.call(await context.getSendingOptions()) : context.sendBlockchainTransaction(method));
+        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' ? method.call(await getSendingOptions()) : sendBlockchainTransaction(method));
     };
 
-    context.sendBlockchainTransaction = function sendBlockchainTransaction(transaction) {
+    var sendBlockchainTransaction = function sendBlockchainTransaction(transaction) {
         return new Promise(async function(ok, ko) {
             var handleTransactionError = function handleTransactionError(e) {
                 e !== undefined && e !== null && (e.message || e).indexOf('not mined within') === -1 && ko(e);
             }
             try {
-                (transaction = transaction.send ? transaction.send(await context.getSendingOptions(transaction), handleTransactionError) : transaction).on('transactionHash', transactionHash => {
+                (transaction = transaction.send ? transaction.send(await getSendingOptions(transaction), handleTransactionError) : transaction).on('transactionHash', transactionHash => {
                     var timeout = async function() {
                         var receipt = await engine.eth.getTransactionReceipt(transactionHash);
                         if (!receipt || !receipt.blockNumber || parseInt(await engine.eth.getBlockNumber()) < (parseInt(receipt.blockNumber) + (configuration.transactionConfirmations || 0))) {
-                            return globalScope.setTimeout(timeout, configuration.transactionConfirmationsTimeoutMillis);
+                            return global.setTimeout(timeout, configuration.transactionConfirmationsTimeoutMillis);
                         }
                         return transaction.then(ok);
                     };
-                    globalScope.setTimeout(timeout);
+                    global.setTimeout(timeout);
                 }).catch(handleTransactionError);
             } catch (e) {
                 return handleTransactionError(e);
@@ -66,15 +75,15 @@ module.exports = function Web3BlockchainProvider(engine) {
         });
     };
 
-    context.getAddress = async function getAddress() {
-        globalScope && globalScope.ethereum && globalScope.ethereum.enable && await globalScope.ethereum.enable();
+    var getAddress = async function getAddress() {
+        global.ethereum && global.ethereum.enable && await global.ethereum.enable();
         return (context.walletAddress = (await engine.eth.getAccounts())[0]);
     };
 
-    context.getSendingOptions = function getSendingOptions(transaction) {
+    var getSendingOptions = function getSendingOptions(transaction) {
         return new Promise(async function(ok, ko) {
             if (transaction) {
-                var address = await context.getAddress();
+                var address = await getAddress();
                 return transaction.estimateGas({
                         from: address,
                         gasPrice: engine.utils.toWei("13", "gwei")
