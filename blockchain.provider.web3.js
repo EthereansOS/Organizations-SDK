@@ -50,7 +50,7 @@ module.exports = function Web3BlockchainProvider(engine) {
             }
         }
         var method = (call.implementation ? call.get : call.new ? call.new : call).apply(call, args);
-        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' ? method.call(await getSendingOptions()) : sendBlockchainTransaction(method));
+        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' || method._method.constant ? method.call(await getSendingOptions()) : sendBlockchainTransaction(method));
     };
 
     var sendBlockchainTransaction = function sendBlockchainTransaction(transaction) {

@@ -1,51 +1,27 @@
 var BlockchainProvider = require('./blockchainProvider');
-var dfo = require('./dfo');
+var DFO = require('./dfo');
 
-var defaultReadCalls = {
-    'getMinimumBlockNumberForSurvey': 'uint256',
-    'getMinimumBlockNumberForEmergencySurvey': 'uint256',
-    'getEmergencySurveyStaking': 'uint256',
-    'getSurveySingleReward': 'uint256',
-    'getQuorum': 'uint256',
-    'getMinimumStaking': 'uint256',
-    'getIndex': 'uint256',
-    'getLink': 'string',
-};
+module.exports = global.DFOHub = function DFOHub(engine) {
 
-module.exports = global.DFOHub = {
-    init(engine) {
-        var blockchainProvider = BlockchainProvider(engine);
+    var blockchainProvider = BlockchainProvider(engine);
+    var dfoHub = DFO(blockchainProvider);
+    blockchainProvider.attach(dfoHub);
+    delete blockchainProvider.attach;
 
-        var initialCall = async function initialCall(name, type) {
-            return blockchainProvider.decodeAbi(type, await blockchainProvider.callContract(dfoHub.proxy, 'read', name, '0x'));
-        };
+    dfoHub.refresh = function refresh(options) {
+        var oldLigthweight = options && options.lightweight;
+        options && options.lightweight && delete options.lightweight;
+        dfoHub = DFO(blockchainProvider, undefined, options, dfoHub);
+        oldLigthweight !== undefined && oldLigthweight !== null && (options.lightweight = oldLigthweight);
+        return dfoHub.asPromise;
+    };
 
-        var dfoHub = {
-            name : 'DFOHub',
-            symbol : 'BUIDL',
-            totalSupply : '42000000000000000000000000',
-            decimals : '18'
-        };
-        Object.entries(defaultReadCalls).forEach(entry => dfoHub[entry[0]] = function() {
-            return initialCall(entry[0], entry[1]);
-        });
-        dfoHub = dfo.init(blockchainProvider, undefined, undefined, dfoHub);
-        delete dfoHub.collateralLoad;
-        blockchainProvider.attach(dfoHub);
-        delete blockchainProvider.attach;
+    dfoHub.load = async function load(address, options) {
+        if((await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)', topics: [blockchainProvider.sha3(address)]})).length === 0) {
+            throw 'Given address is not created by dfoHub';
+        }
+        return await DFO(blockchainProvider, address, options).asPromise;
+    };
 
-        dfoHub.load = async function load(address, options) {
-            options = options || {};
-            options.loadAll = true;
-            var dfoDeployedLogs = await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)', topics: [options.address]});
-            if(dfoDeployedLogs.length === 0) {
-                throw 'Given address is not created by dfoHub';
-            }
-            var loadedDFO = await dfo.init(blockchainProvider, address, options).collateralLoad;
-            delete options.loadAll;
-            return loadedDFO;
-        };
-
-        return dfoHub;
-    }
+    return dfoHub;
 };

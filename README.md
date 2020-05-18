@@ -36,7 +36,7 @@ And load your web3 connection object from your favorite provider (e.g. Metamask)
 
 ```javascript
 async function main() {
-    DFOHub.init(web3);
+    DFOHub(web3);
 
     //DFOHub is now fully loaded in your Blockchain Provider object
     var myDFO = await web3.eth.dfoHub.load('<Your DFO Address goes here>');

@@ -52,7 +52,7 @@ module.exports = function Web3BlockchainProvider(engine) {
             }
         }
         var method = (call.implementation ? call.get : call.new ? call.new : call).apply(call, args);
-        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' ? method.call(await getSendingOptions()) : sendBlockchainTransaction(method));
+        return await (method._method.stateMutability === 'view' || method._method.stateMutability === 'pure' || method._method.constant ? method.call(await getSendingOptions()) : sendBlockchainTransaction(method));
     };
 
     var sendBlockchainTransaction = function sendBlockchainTransaction(transaction) {
@@ -109,10 +109,10 @@ module.exports = function Web3BlockchainProvider(engine) {
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./configuration.json":3}],2:[function(require,module,exports){
-module.exports = function(engine) {
+module.exports = function BlockchainProvider(engine) {
     var name = engine.__proto__.constructor.name.toLowerCase();
     var Provider;
-    if (name === 'web3') {
+    if (name.indexOf('web3') !== -1) {
         Provider = require('./blockchain.provider.web3');
     }
     return new Provider(engine);
@@ -140,7 +140,6 @@ module.exports={
     "proxyAbi": [{"inputs":[{"internalType":"address","name":"votingTokenAddress","type":"address"},{"internalType":"address","name":"stateHolderAddress","type":"address"},{"internalType":"address","name":"functionalityModelsManagerAddress","type":"address"},{"internalType":"address","name":"functionalityProposalManagerAddress","type":"address"},{"internalType":"address","name":"functionalitiesManagerAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"string","name":"key","type":"string"},{"indexed":true,"internalType":"bytes32","name":"firstIndex","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"secondIndex","type":"bytes32"},{"indexed":false,"internalType":"bytes","name":"data","type":"bytes"}],"name":"Event","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"string","name":"codeName","type":"string"},{"indexed":false,"internalType":"uint256","name":"position","type":"uint256"},{"indexed":false,"internalType":"address","name":"proposal","type":"address"},{"indexed":true,"internalType":"string","name":"replaced","type":"string"},{"indexed":false,"internalType":"address","name":"replacedLocation","type":"address"},{"indexed":false,"internalType":"bool","name":"replacedWasSubmitable","type":"bool"},{"indexed":false,"internalType":"string","name":"replacedMethodSignature","type":"string"},{"indexed":false,"internalType":"bool","name":"replacedWasInternal","type":"bool"},{"indexed":false,"internalType":"bool","name":"replacedNeededSender","type":"bool"},{"indexed":false,"internalType":"address","name":"replacedProposal","type":"address"},{"indexed":false,"internalType":"uint256","name":"replacedPosition","type":"uint256"}],"name":"FunctionalitySet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAddress","type":"address"},{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"MVDFunctionalitiesManagerChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAddress","type":"address"},{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"MVDFunctionalityModelsManagerChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAddress","type":"address"},{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"MVDFunctionalityProposalManagerChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"PaymentReceived","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"proposal","type":"address"}],"name":"Proposal","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposal","type":"address"},{"indexed":false,"internalType":"bool","name":"success","type":"bool"}],"name":"ProposalSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"ProxyChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAddress","type":"address"},{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"StateHolderChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAddress","type":"address"},{"indexed":true,"internalType":"address","name":"newAddress","type":"address"}],"name":"TokenChanged","type":"event"},{"inputs":[{"internalType":"address","name":"location","type":"address"},{"internalType":"bytes","name":"payload","type":"bytes"}],"name":"callFromManager","outputs":[{"internalType":"bool","name":"","type":"bool"},{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"newAddress","type":"address"}],"name":"changeProxy","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"proposalAddress","type":"address"}],"name":"disableProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"eventSignature","type":"string"},{"internalType":"bytes","name":"firstIndex","type":"bytes"},{"internalType":"bytes","name":"secondIndex","type":"bytes"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"emitEvent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"},{"internalType":"uint256","name":"position","type":"uint256"},{"internalType":"address","name":"proposal","type":"address"},{"internalType":"string","name":"replaced","type":"string"},{"internalType":"address","name":"location","type":"address"},{"internalType":"bool","name":"submitable","type":"bool"},{"internalType":"string","name":"methodSignature","type":"string"},{"internalType":"bool","name":"isInternal","type":"bool"},{"internalType":"bool","name":"needsSender","type":"bool"},{"internalType":"address","name":"proposalAddress","type":"address"},{"internalType":"uint256","name":"replacedPosition","type":"uint256"}],"name":"emitFromManager","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"functionalitiesToJSON","outputs":[{"internalType":"string","name":"functionsJSONArray","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"start","type":"uint256"},{"internalType":"uint256","name":"l","type":"uint256"}],"name":"functionalitiesToJSON","outputs":[{"internalType":"string","name":"functionsJSONArray","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getFunctionalitiesAmount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"}],"name":"getFunctionalityAddress","outputs":[{"internalType":"address","name":"location","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMVDFunctionalitiesManagerAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMVDFunctionalityModelsManagerAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getMVDFunctionalityProposalManagerAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"}],"name":"getPendingProposal","outputs":[{"internalType":"address","name":"proposalAddress","type":"address"},{"internalType":"bool","name":"isReallyPending","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getStateHolderAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"}],"name":"hasFunctionality","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"votingTokenAddress","type":"address"},{"internalType":"address","name":"stateHolderAddress","type":"address"},{"internalType":"address","name":"functionalityModelsManagerAddress","type":"address"},{"internalType":"address","name":"functionalityProposalManagerAddress","type":"address"},{"internalType":"address","name":"functionalitiesManagerAddress","type":"address"}],"name":"init","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"functionality","type":"address"}],"name":"isAuthorizedFunctionality","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"functionality","type":"address"}],"name":"isValidFunctionality","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"proposal","type":"address"}],"name":"isValidProposal","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"},{"internalType":"bool","name":"emergency","type":"bool"},{"internalType":"address","name":"sourceLocation","type":"address"},{"internalType":"uint256","name":"sourceLocationId","type":"uint256"},{"internalType":"address","name":"location","type":"address"},{"internalType":"bool","name":"submitable","type":"bool"},{"internalType":"string","name":"methodSignature","type":"string"},{"internalType":"string","name":"returnAbiParametersArray","type":"string"},{"internalType":"bool","name":"isInternal","type":"bool"},{"internalType":"bool","name":"needsSender","type":"bool"},{"internalType":"string","name":"replaces","type":"string"}],"name":"newProposal","outputs":[{"internalType":"address","name":"proposalAddress","type":"address"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"read","outputs":[{"internalType":"bytes","name":"returnData","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"setMVDFunctionalitiesManagerAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"setMVDFunctionalityModelsManagerAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"setMVDFunctionalityProposalManagerAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"setProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"setStateHolderAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"setToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"proposalAddress","type":"address"}],"name":"startProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"codeName","type":"string"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"submit","outputs":[{"internalType":"bytes","name":"returnData","type":"bytes"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"address","name":"token","type":"address"}],"name":"transfer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}],
     "ENSAbi": [{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"recordExists","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"resolver","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"}],"name":"setOwner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"uint64","name":"ttl","type":"uint64"}],"name":"setRecord","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"resolver","type":"address"}],"name":"setResolver","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"bytes32","name":"label","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"}],"name":"setSubnodeOwner","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"bytes32","name":"label","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"uint64","name":"ttl","type":"uint64"}],"name":"setSubnodeRecord","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"uint64","name":"ttl","type":"uint64"}],"name":"setTTL","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"ttl","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"}],
     "resolverAbi": [{"inputs":[{"internalType":"contract ENS","name":"ens","type":"address"},{"internalType":"address","name":"dfoHub","type":"address"},{"internalType":"bytes","name":"hashContent","type":"bytes"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":false,"internalType":"address","name":"a","type":"address"}],"name":"AddrChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"coinType","type":"uint256"},{"indexed":false,"internalType":"bytes","name":"newAddress","type":"bytes"}],"name":"AddressChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"target","type":"address"},{"indexed":false,"internalType":"bool","name":"isAuthorised","type":"bool"}],"name":"AuthorisationChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"node","type":"bytes32"},{"indexed":false,"internalType":"bytes","name":"hash","type":"bytes"}],"name":"ContenthashChanged","type":"event"},{"inputs":[{"internalType":"contract ENS","name":"ens","type":"address"},{"internalType":"address","name":"dfoHub","type":"address"},{"internalType":"bytes","name":"hashContent","type":"bytes"}],"name":"init","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"ensDomain","type":"string"},{"internalType":"address","name":"a","type":"address"}],"name":"setAddr","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"uint256","name":"coinType","type":"uint256"},{"internalType":"bytes","name":"a","type":"bytes"}],"name":"setAddr","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"a","type":"address"}],"name":"setAddr","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"address","name":"target","type":"address"},{"internalType":"bool","name":"isAuthorised","type":"bool"}],"name":"setAuthorisation","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"bytes","name":"hash","type":"bytes"}],"name":"setContenthash","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"addr","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"},{"internalType":"uint256","name":"coinType","type":"uint256"}],"name":"addr","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"node","type":"bytes32"}],"name":"contenthash","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"subdomain","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceID","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"}],
-    "stateHolderTypes": ["address", "bool", "string", "uint256"]
 }
 },{}],4:[function(require,module,exports){
 (function (global){
@@ -149,7 +148,7 @@ var configuration = require('./configuration.json');
 global.voidEthereumAddress = global.voidEthereumAddress || '0x0000000000000000000000000000000000000000';
 
 function getNetworkElement(element, networkId) {
-    var network = configuration.ethereumNetwork[networkId];
+    var network = configuration.ethereumNetwork[(networkId + '').split('0x').join('')];
     if (network === undefined || network === null) {
         return;
     }
@@ -164,6 +163,15 @@ function newContract(blockchainProvider, abi, address) {
     key = address.toLowerCase();
     contracts[key] = contracts[key] || blockchainProvider.newContract(abi, address === global.voidEthereumAddress ? undefined : address);
     return contracts[key];
+}
+
+function attachProxy(blockchainProvider, address, dfo) {
+    return dfo.proxy = new Promise(async function(ok) {
+        address = address || getNetworkElement('dfoHubAddress', await blockchainProvider.getNetworkId());
+        dfo.address = address;
+        dfo.originalAddress = address;
+        loadProxy(blockchainProvider, address).then(proxy => (dfo.address = proxy.options.address) && ok(proxy));
+    });
 }
 
 async function loadProxy(blockchainProvider, address, allAddresses) {
@@ -188,73 +196,89 @@ async function loadProxy(blockchainProvider, address, allAddresses) {
     return proxy;
 }
 
-async function loadVotingToken(blockchainProvider, dfo) {
-    dfo.votingToken = newContract(blockchainProvider, configuration.votingTokenAbi, await blockchainProvider.callContract(dfo.proxy, 'getToken'));
-    dfo.name = await blockchainProvider.callContract(dfo.votingToken, 'name');
-    dfo.symbol = await blockchainProvider.callContract(dfo.votingToken, 'symbol');
-    dfo.totalSupply = await blockchainProvider.callContract(dfo.votingToken, 'totalSupply');
-    dfo.decimals = await blockchainProvider.callContract(dfo.votingToken, 'decimals');
+function attachVotingToken(blockchainProvider, dfo) {
+    return dfo.votingToken = new Promise(async function(ok) {
+        var votingToken = newContract(blockchainProvider, configuration.votingTokenAbi, await blockchainProvider.callContract(await dfo.proxy, 'getToken'));
+        ok(votingToken);
+        dfo.name = await blockchainProvider.callContract(votingToken, 'name');
+        dfo.symbol = await blockchainProvider.callContract(votingToken, 'symbol');
+        dfo.totalSupply = await blockchainProvider.callContract(votingToken, 'totalSupply');
+        dfo.decimals = await blockchainProvider.callContract(votingToken, 'decimals');
+    });
 }
 
-async function attachStateHolder(blockchainProvider, dfo) {
-    dfo.__loadingStateHolder__ = true;
-    await blockchainProvider.callContract(dfo.proxy, 'getStateHolderAddress').then(stateHolderAddress => dfo.stateHolder = newContract(blockchainProvider, configuration.stateHolderAbi, stateHolderAddress));
+function attachStateHolder(blockchainProvider, dfo) {
+    dfo.stateHolder = dfo.proxy.then(proxy => blockchainProvider.callContract(proxy, 'getStateHolderAddress')).then(stateHolderAddress => newContract(blockchainProvider, configuration.stateHolderAbi, stateHolderAddress));
     dfo.getState = dfo.getState || async function() {
-        var json = JSON.parse(await blockchainProvider.callContract(dfo.stateHolder, 'toJSON'));
+        var json = JSON.parse(await blockchainProvider.callContract(await dfo.stateHolder, 'toJSON'));
         var state = {};
         for(var i in json) {
             var element = json[i];
             var methodName = 'get' + element.type.substring(0, 1).toUpperCase() + element.type.substring(1);
-            state[element.name] = await blockchainProvider.callContract(dfo.stateHolder, methodName, element.name);
+            state[element.name] = await blockchainProvider.callContract(await dfo.stateHolder, methodName, element.name);
         }
         return state;
     }
-    delete dfo.__loadingStateHolder__;
+    configuration.stateHolderAbi.forEach(it => {
+        if(it.type !== 'function' || it.stateMutability !== 'view' || dfo[it.name] || it.name === 'getProxy' || it.name === 'toJSON') {
+            return;
+        }
+        dfo[it.name] = function(name) {
+            return dfo.stateHolder.then(stateHolder => blockchainProvider.callContract(stateHolder, it.name, name));
+        }
+    })
+    return dfo.stateHolder;
 }
 
-function attachFunctionalities(blockchainProvider, dfo) {
+function attachFunctionalities(blockchainProvider, dfo, lightweight) {
     dfo.refreshFunctionalities = dfo.refreshFunctionalities || function() {
         return attachFunctionalities(blockchainProvider, dfo);
     };
-    dfo.functionalities && Object.keys(dfo.functionalities).forEach(functionality => delete dfo[functionality]);
-    dfo.__loadingFunctionalities__ = true;
-    dfo.functionalities = {};
-    return new Promise(async function(ok){
+    if(lightweight) {
+        dfo.functionalities && dfo.functionalities.then(functionalities => Object.keys(functionalities).forEach(functionality => delete dfo[functionality]));
+        return delete dfo.functionalities;
+    }
+    return dfo.functionalities = new Promise(async function(ok) {
+        dfo.functionalities && Object.keys(await dfo.functionalities).forEach(functionality => delete dfo[functionality]);
+        var globalFunctionalities = {};
         var loop = async function(i, plus) {
             var functionalities = {};
             try {
-                functionalities = parseFunctionalities(await blockchainProvider.callContract(dfo.proxy, 'functionalitiesToJSON', i, plus));
+                functionalities = parseFunctionalities(await blockchainProvider.callContract(await dfo.proxy, 'functionalitiesToJSON', i, plus));
             } catch(e) {
             }
             var keys = Object.keys(functionalities);
             if(keys.length === 0) {
-                delete dfo.__loadingFunctionalities__;
-                return ok();
+                return ok(globalFunctionalities);
             }
             keys.forEach(key => {
-                dfo.functionalities[key] = functionalities[key];
-                var functionality = dfo.functionalities[key];
+                globalFunctionalities[key] = functionalities[key];
+                var functionality = globalFunctionalities[key];
+                functionality.realInputParameters = [];
                 functionality.inputParameters = [];
                 try {
-                    functionality.inputParameters = functionality.methodSignature.split(functionality.methodSignature.substring(0, functionality.methodSignature.indexOf('(') + 1)).join('').split(')').join('');
-                    functionality.inputParameters = functionality.inputParameters ? functionality.inputParameters.split(',') : [];
+                    functionality.realInputParameters = functionality.methodSignature.split(functionality.methodSignature.substring(0, functionality.methodSignature.indexOf('(') + 1)).join('').split(')').join('');
+                    functionality.realInputParameters = functionality.realInputParameters ? functionality.realInputParameters.split(',') : [];
+                    functionality.inputParameters = JSON.parse(JSON.stringify(functionality.realInputParameters));
+                    functionality.needsSender && functionality.inputParameters.shift();
+                    functionality.needsSender && functionality.isSubmitable && functionality.inputParameters.shift();
                 } catch (e) {}
                 if(functionality.isInternal) {
                     return;
                 }
                 dfo[key] = async function() {
                     var argument = '0x';
-                    if(functionality.inputParameters && functionality.inputParameters.length > 0) {
+                    if(functionality.realInputParameters && functionality.realInputParameters.length > 0) {
                         var args = [];
                         functionality.needsSender && args.push(global.voidEthereumAddress);
                         functionality.needsSender && functionality.isSubmitable && args.push(0);
                         for(var i in arguments) {
                             args.push(arguments[i]);
                         }
-                        argument = blockchainProvider.encodeAbi(functionality.inputParameters, args);
+                        argument = blockchainProvider.encodeAbi(functionality.realInputParameters, args);
                     }
                     var methodName = functionality.isSubmitable ? 'submit' : 'read';
-                    var result = await blockchainProvider.callContract(dfo.proxy, methodName, functionality.codeName, argument);
+                    var result = await blockchainProvider.callContract(await dfo.proxy, methodName, functionality.codeName, argument);
                     try {
                         result = blockchainProvider.decodeAbi(functionality.returnAbiParametersArray, result);
                     } catch(e) {
@@ -290,8 +314,14 @@ function parseFunctionalities(functionalitiesJSON) {
     return null;
 }
 
-async function refreshWellKnownData(blockchainProvider, dfo) {
-    dfo.__loadingWellKnownData__ = true;
+async function attachWellKnownData(blockchainProvider, dfo) {
+    dfo.refreshWellKnownData = dfo.refreshWellKnownData || function() {
+        return attachFunctionalities(blockchainProvider, dfo) && attachWellKnownData(blockchainProvider, dfo);
+    }
+    if(!dfo.functionalities) {
+        return;
+    }
+    await dfo.functionalities;
     dfo.minimumBlockNumberForSurvey = await dfo.getMinimumBlockNumberForSurvey();
     dfo.minimumBlockNumberForEmergencySurvey = await dfo.getMinimumBlockNumberForEmergencySurvey();
     dfo.emergencySurveyStaking = await dfo.getEmergencySurveyStaking();
@@ -328,14 +358,13 @@ async function refreshWellKnownData(blockchainProvider, dfo) {
         delete dfo.subdomain;
         delete dfo.ens;
     }
-    delete dfo.__loadingWellKnownData__;
 }
 
-function attachGetLogs(blockchainProvider, dfo) {
+function attachGetPastLogs(blockchainProvider, dfo) {
     dfo.getPastLogs = dfo.getPastLogs || async function getPastLogs(args) {
         global.dfoEvent = global.dfoEvent || blockchainProvider.sha3('Event(string,bytes32,bytes32,bytes)');
         var logArgs = {
-            address: (dfo.proxy || await loadProxy(blockchainProvider, dfo.address || getNetworkElement('dfoHubAddress', await blockchainProvider.getNetworkId()))).options.allAddresses,
+            address: (await dfo.proxy).options.allAddresses,
             topics: [
                 global.dfoEvent
             ],
@@ -395,94 +424,74 @@ function formatDFOLogs(blockchainProvider, logVar, event) {
     return logVar.length ? logs : logVar;
 }
 
-module.exports = {
-    init(blockchainProvider, address, options, dfo) {
-        options = options || {};
-        dfo = dfo || {
-            async refresh() {
-                options.loadAll = true;
-                dfo = await module.exports.init(blockchainProvider, address, options, dfo).collateralLoad;
-                delete options.loadAll;
-                return dfo;
+function deepCopy(data, extension) {
+    data = data ? JSON.parse(JSON.stringify(data)) : {};
+    extension = extension ? JSON.parse(JSON.stringify(extension)) : {};
+    var keys = Object.keys(extension);
+    for(var i in keys) {
+        var key = keys[i];
+        if(!data[key]) {
+            data[key] = extension[key];
+            continue;
+        }
+        try {
+            if(Object.keys(data[key]).length > 0 && Object.keys(extension[key]).length > 0) {
+                data[key] = deepCopy(data[key], extension[key]);
+                continue;
             }
-        };
-
-        attachGetLogs(blockchainProvider, dfo);
-
-        dfo.collateralLoad = new Promise(async function(ok) {
-            address = address || getNetworkElement('dfoHubAddress', await blockchainProvider.getNetworkId());
-            dfo.address = address;
-            dfo.__loadingProxy__ = true;
-            dfo.proxy = await loadProxy(blockchainProvider, address);
-            delete dfo.__loadingProxy__;
-            dfo.originalAddress = address;
-            dfo.address = dfo.proxy.options.address;
-            await loadVotingToken(blockchainProvider, dfo);
-            var functionalitiesPromise = attachFunctionalities(blockchainProvider, dfo);
-            options.loadAll && await functionalitiesPromise;
-            await refreshWellKnownData(blockchainProvider, dfo);
-            var stateHolderPromise = attachStateHolder(blockchainProvider, dfo);
-            options.loadAll && await stateHolderPromise;
-            delete dfo.collateralLoad;
-            return ok(dfo);
-        });
-
-        return dfo;
+        } catch(e) {
+        }
+        data[key] = extension[key];
     }
+    return data;
+}
+
+module.exports = function DFO(blockchainProvider, address, options, dfo) {
+    dfo = dfo || {
+        refresh(newOptions) {
+            return module.exports(blockchainProvider, address, deepCopy(options, newOptions), dfo).asPromise;
+        }
+    };
+    dfo.asPromise = Promise.all([
+        attachProxy(blockchainProvider, address, dfo),
+        attachFunctionalities(blockchainProvider, dfo, options && options.lightweight),
+        attachVotingToken(blockchainProvider, dfo),
+        attachWellKnownData(blockchainProvider, dfo),
+        attachStateHolder(blockchainProvider, dfo),
+        attachGetPastLogs(blockchainProvider, dfo)
+    ]).then(() => dfo);
+
+    return dfo;
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./configuration.json":3}],5:[function(require,module,exports){
 (function (global){
 var BlockchainProvider = require('./blockchainProvider');
-var dfo = require('./dfo');
+var DFO = require('./dfo');
 
-var defaultReadCalls = {
-    'getMinimumBlockNumberForSurvey': 'uint256',
-    'getMinimumBlockNumberForEmergencySurvey': 'uint256',
-    'getEmergencySurveyStaking': 'uint256',
-    'getSurveySingleReward': 'uint256',
-    'getQuorum': 'uint256',
-    'getMinimumStaking': 'uint256',
-    'getIndex': 'uint256',
-    'getLink': 'string',
-};
+module.exports = global.DFOHub = function DFOHub(engine) {
 
-module.exports = global.DFOHub = {
-    init(engine) {
-        var blockchainProvider = BlockchainProvider(engine);
+    var blockchainProvider = BlockchainProvider(engine);
+    var dfoHub = DFO(blockchainProvider);
+    blockchainProvider.attach(dfoHub);
+    delete blockchainProvider.attach;
 
-        var initialCall = async function initialCall(name, type) {
-            return blockchainProvider.decodeAbi(type, await blockchainProvider.callContract(dfoHub.proxy, 'read', name, '0x'));
-        };
+    dfoHub.refresh = function refresh(options) {
+        var oldLigthweight = options && options.lightweight;
+        options && options.lightweight && delete options.lightweight;
+        dfoHub = DFO(blockchainProvider, undefined, options, dfoHub);
+        oldLigthweight !== undefined && oldLigthweight !== null && (options.lightweight = oldLigthweight);
+        return dfoHub.asPromise;
+    };
 
-        var dfoHub = {
-            name : 'DFOHub',
-            symbol : 'BUIDL',
-            totalSupply : '42000000000000000000000000',
-            decimals : '18'
-        };
-        Object.entries(defaultReadCalls).forEach(entry => dfoHub[entry[0]] = function() {
-            return initialCall(entry[0], entry[1]);
-        });
-        dfoHub = dfo.init(blockchainProvider, undefined, undefined, dfoHub);
-        delete dfoHub.collateralLoad;
-        blockchainProvider.attach(dfoHub);
-        delete blockchainProvider.attach;
+    dfoHub.load = async function load(address, options) {
+        if((await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)', topics: [blockchainProvider.sha3(address)]})).length === 0) {
+            throw 'Given address is not created by dfoHub';
+        }
+        return await DFO(blockchainProvider, address, options).asPromise;
+    };
 
-        dfoHub.load = async function load(address, options) {
-            options = options || {};
-            options.loadAll = true;
-            var dfoDeployedLogs = await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)', topics: [options.address]});
-            if(dfoDeployedLogs.length === 0) {
-                throw 'Given address is not created by dfoHub';
-            }
-            var loadedDFO = await dfo.init(blockchainProvider, address, options).collateralLoad;
-            delete options.loadAll;
-            return loadedDFO;
-        };
-
-        return dfoHub;
-    }
+    return dfoHub;
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./blockchainProvider":2,"./dfo":4}]},{},[5]);
