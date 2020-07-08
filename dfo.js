@@ -29,13 +29,33 @@ function attachProxy(blockchainProvider, address, dfo) {
     });
 }
 
+function attachFunctionalitiesManager(blockchainProvider, dfo) {
+    return dfo.functionalitiesManager = new Promise(async function(ok) {
+        var proxy = await dfo.proxy;
+        return ok(newContract(blockchainProvider, configuration.functionalitiesManagerAbi, proxy.options.delegatesAddresses ? proxy.options.delegatesAddresses[4] : await blockchainProvider.callContract(proxy, "getMVDFunctionalitiesManagerAddress")));
+    });
+}
+
 async function loadProxy(blockchainProvider, address, allAddresses) {
     allAddresses = allAddresses || [];
     allAddresses.push(address);
     var proxy = newContract(blockchainProvider, configuration.proxyAbi, address);
+    proxy.options = proxy.options || { address };
+    proxy.options.votingTokenAddress = global.voidEthereumAddress;
+
     try {
-        await blockchainProvider.callContract(proxy, 'getToken');
-    } catch (e) {
+        proxy.options.delegatesAddresses = await blockchainProvider.callContract(proxy, 'getDelegates');
+        proxy.options.votingTokenAddress = proxy.options.delegatesAddresses[0];
+    } catch(e) {
+    }
+
+    if(proxy.options.votingTokenAddress === global.voidEthereumAddress) {
+        try {
+            proxy.options.votingTokenAddress = await blockchainProvider.callContract(proxy, 'getToken');
+        } catch (e) {
+        }
+    }
+    if(proxy.options.votingTokenAddress === global.voidEthereumAddress) {
         var logs = await blockchainProvider.getPastLogs({
             address,
             topics: [
@@ -45,7 +65,6 @@ async function loadProxy(blockchainProvider, address, allAddresses) {
         });
         return await loadProxy(blockchainProvider, blockchainProvider.decodeAbi('address', logs[0].topics[1]), allAddresses);
     }
-    proxy.options = proxy.options || { address };
     proxy.options.originalAddress = allAddresses[0];
     proxy.options.allAddresses = allAddresses;
     return proxy;
@@ -53,7 +72,7 @@ async function loadProxy(blockchainProvider, address, allAddresses) {
 
 function attachVotingToken(blockchainProvider, dfo) {
     return dfo.votingToken = new Promise(async function(ok) {
-        var votingToken = newContract(blockchainProvider, configuration.votingTokenAbi, await blockchainProvider.callContract(await dfo.proxy, 'getToken'));
+        var votingToken = newContract(blockchainProvider, configuration.votingTokenAbi, (await dfo.proxy).options.votingTokenAddress);
         ok(votingToken);
         dfo.name = await blockchainProvider.callContract(votingToken, 'name');
         dfo.symbol = await blockchainProvider.callContract(votingToken, 'symbol');
@@ -63,9 +82,10 @@ function attachVotingToken(blockchainProvider, dfo) {
 }
 
 function attachStateHolder(blockchainProvider, dfo) {
-    dfo.stateHolder = dfo.proxy.then(proxy => blockchainProvider.callContract(proxy, 'getStateHolderAddress')).then(stateHolderAddress => newContract(blockchainProvider, configuration.stateHolderAbi, stateHolderAddress));
+    dfo.stateHolder = dfo.proxy.then(async proxy => proxy.options.delegatesAddresses ? proxy.options.delegatesAddresses[2] : await blockchainProvider.callContract(proxy, 'getStateHolderAddress')).then(stateHolderAddress => newContract(blockchainProvider, configuration.stateHolderAbi, stateHolderAddress));
     dfo.getState = dfo.getState || async function() {
-        var json = JSON.parse(await blockchainProvider.callContract(await dfo.stateHolder, 'toJSON'));
+        var json = await blockchainProvider.callContract(await dfo.stateHolder, 'toJSON');
+        json = JSON.parse(json.endsWith(',]') ? (json.substring(0, json.lastIndexOf(',]')) + ']') : json);
         var state = {};
         for(var i in json) {
             var element = json[i];
@@ -93,13 +113,59 @@ function attachFunctionalities(blockchainProvider, dfo, lightweight) {
         dfo.functionalities && dfo.functionalities.then(functionalities => Object.keys(functionalities).forEach(functionality => delete dfo[functionality]));
         return delete dfo.functionalities;
     }
+    var onFunctionality = function(dfo, key) {
+        if(dfo[key]) {
+            return;
+        }
+        dfo[key] = async function() {
+            var functionality = (await dfo.functionalities)[key];
+            var argument = '0x';
+            var value = undefined;
+            if(functionality.realInputParameters && functionality.realInputParameters.length > 0) {
+                var args = [];
+                for(var i in arguments) {
+                    args.push(arguments[i]);
+                }
+                if(args.length > functionality.inputParameters.length) {
+                    value = args.shift();
+                }
+                functionality.needsSender && functionality.submitable && args.unshift(0);
+                functionality.needsSender && args.unshift(global.voidEthereumAddress);
+
+                argument = blockchainProvider.encodeAbi(functionality.realInputParameters, args);
+            }
+            var methodName = functionality.submitable ? 'submit' : 'read';
+            var result = await blockchainProvider.callContract(value, await dfo.proxy, methodName, functionality.codeName, argument);
+            try {
+                result = blockchainProvider.decodeAbi(functionality.returnAbiParametersArray, result);
+            } catch(e) {
+            }
+            try {
+                var resultArray = [];
+                Object.keys(result).sort().forEach(key => !isNaN(parseInt(key)) && resultArray.push(result[key]));
+                result = resultArray;
+            } catch(e) {
+            }
+            try {
+                result instanceof Array && result.length === 1 && (result = result[0]);
+            } catch(e) {
+            }
+            return result;
+        };
+    }
+    setTimeout(async function() {
+        try {
+            JSON.parse(await blockchainProvider.callContract(await dfo.functionalitiesManager, 'functionalityNames')).forEach(key => onFunctionality(dfo, key));
+        } catch(e) {
+        }
+    });
     return dfo.functionalities = new Promise(async function(ok) {
         dfo.functionalities && Object.keys(await dfo.functionalities).forEach(functionality => delete dfo[functionality]);
         var globalFunctionalities = {};
         var loop = async function(i, plus) {
             var functionalities = {};
             try {
-                functionalities = parseFunctionalities(await blockchainProvider.callContract(await dfo.proxy, 'functionalitiesToJSON', i, plus));
+                functionalities = parseFunctionalities(await blockchainProvider.callContract(await dfo.functionalitiesManager, 'functionalitiesToJSON', i, plus));
             } catch(e) {
             }
             var keys = Object.keys(functionalities);
@@ -116,40 +182,12 @@ function attachFunctionalities(blockchainProvider, dfo, lightweight) {
                     functionality.realInputParameters = functionality.realInputParameters ? functionality.realInputParameters.split(',') : [];
                     functionality.inputParameters = JSON.parse(JSON.stringify(functionality.realInputParameters));
                     functionality.needsSender && functionality.inputParameters.shift();
-                    functionality.needsSender && functionality.isSubmitable && functionality.inputParameters.shift();
+                    functionality.needsSender && functionality.submitable && functionality.inputParameters.shift();
                 } catch (e) {}
                 if(functionality.isInternal) {
                     return;
                 }
-                dfo[key] = async function() {
-                    var argument = '0x';
-                    if(functionality.realInputParameters && functionality.realInputParameters.length > 0) {
-                        var args = [];
-                        functionality.needsSender && args.push(global.voidEthereumAddress);
-                        functionality.needsSender && functionality.isSubmitable && args.push(0);
-                        for(var i in arguments) {
-                            args.push(arguments[i]);
-                        }
-                        argument = blockchainProvider.encodeAbi(functionality.realInputParameters, args);
-                    }
-                    var methodName = functionality.isSubmitable ? 'submit' : 'read';
-                    var result = await blockchainProvider.callContract(await dfo.proxy, methodName, functionality.codeName, argument);
-                    try {
-                        result = blockchainProvider.decodeAbi(functionality.returnAbiParametersArray, result);
-                    } catch(e) {
-                    }
-                    try {
-                        var resultArray = [];
-                        Object.keys(result).sort().forEach(key => !isNaN(parseInt(key)) && resultArray.push(result[key]));
-                        result = resultArray;
-                    } catch(e) {
-                    }
-                    try {
-                        result instanceof Array && result.length === 1 && (result = result[0]);
-                    } catch(e) {
-                    }
-                    return result;
-                };
+                onFunctionality(dfo, key);
             });
             loop(i + plus, plus);
         };
@@ -159,10 +197,8 @@ function attachFunctionalities(blockchainProvider, dfo, lightweight) {
 
 function parseFunctionalities(functionalitiesJSON) {
     try {
-        functionalitiesJSON = functionalitiesJSON.trim();
-        var functs = JSON.parse(!functionalitiesJSON.endsWith(',') ? functionalitiesJSON : functionalitiesJSON.substring(0, functionalitiesJSON.length - 1) + ']');
         var functionalities = {};
-        functs.forEach(it => functionalities[it.codeName] = it);
+        JSON.parse((functionalitiesJSON.endsWith(',]') ? (functionalitiesJSON.substring(0, functionalitiesJSON.lastIndexOf(',]')) + ']') : functionalitiesJSON).trim()).forEach(it => functionalities[it.codeName] = it);
         return functionalities;
     } catch (e) {
     }
@@ -309,6 +345,7 @@ module.exports = function DFO(blockchainProvider, address, options, dfo) {
     };
     dfo.asPromise = Promise.all([
         attachProxy(blockchainProvider, address, dfo),
+        attachFunctionalitiesManager(blockchainProvider, dfo),
         attachFunctionalities(blockchainProvider, dfo, options && options.lightweight),
         attachVotingToken(blockchainProvider, dfo),
         attachWellKnownData(blockchainProvider, dfo),
