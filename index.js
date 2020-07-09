@@ -17,7 +17,7 @@ module.exports = global.DFOHub = function DFOHub(engine) {
     };
 
     dfoHub.load = async function load(address, options) {
-        /*if((await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)', topics: [blockchainProvider.sha3(address)]})).length === 0) {
+        if((await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address_indexed,address,address)', topics: [blockchainProvider.sha3(address)]})).length === 0) {
             var found = false;
             for(var log of await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)'})) {
                 if(log.data[0].toLowerCase() === address.toLowerCase()) {
@@ -26,9 +26,9 @@ module.exports = global.DFOHub = function DFOHub(engine) {
                 }
             }
             if(!found) {
-                throw 'Given address is not created by dfoHub';
+                throw 'Given address is not created by dfoHub!';
             }
-        }*/
+        }
         return await DFO(blockchainProvider, address, options).asPromise;
     };
 
