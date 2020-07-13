@@ -48,6 +48,17 @@ module.exports = function Web3BlockchainProvider(engine) {
             args.push(arguments[i]);
         }
         return blockchainCall.apply(context, args);
+    };
+
+    context.simpleCall = function simpleCall(contract, methodName) {
+        var args = [];
+        for(var i = 2; i < arguments.length; i++) {
+            args.push(arguments[i]);
+        }
+        return engine.eth.call({
+            to: contract.options.address,
+            data: contract.methods[methodName].apply(contract, args).encodeABI()
+        });
     }
 
     var blockchainCall = async function blockchainCall(value, call) {

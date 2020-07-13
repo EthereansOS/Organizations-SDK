@@ -44,7 +44,12 @@ async function loadProxy(blockchainProvider, address, allAddresses) {
     proxy.options.votingTokenAddress = global.voidEthereumAddress;
 
     try {
-        proxy.options.delegatesAddresses = await blockchainProvider.callContract(proxy, 'getDelegates');
+        proxy.options.delegatesAddresses = await blockchainProvider.simpleCall(proxy, 'getDelegates');
+        try {
+            proxy.options.delegatesAddresses = blockchainProvider.decodeAbi("address[]", proxy.options.delegatesAddresses);
+        } catch(e) {
+            proxy.options.delegatesAddresses = blockchainProvider.decodeAbi(["address","address","address","address","address","address"], proxy.options.delegatesAddresses);
+        }
         proxy.options.votingTokenAddress = proxy.options.delegatesAddresses[0];
     } catch(e) {
     }
