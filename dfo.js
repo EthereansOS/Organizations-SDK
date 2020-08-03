@@ -1,4 +1,5 @@
 var configuration = require('./configuration.json');
+var nameHash = require('eth-ens-namehash');
 
 global.voidEthereumAddress = global.voidEthereumAddress || '0x0000000000000000000000000000000000000000';
 
@@ -248,9 +249,10 @@ async function attachWellKnownData(blockchainProvider, dfo) {
         delete dfo.link;
     }
     try {
-        dfo.subdomain = await blockchainProvider.callContract(newContract(blockchainProvider, configuration.ENSAbi, configuration.ensAddress), 'subdomain', dfo.originalAddress);
+        global.ENSController = global.ENSController || newContract(blockchainProvider, configuration.ENSAbi, configuration.ensAddress);
+        global.dfoHubENSResolver = global.dfoHubENSResolver || newContract(blockchainProvider, configuration.resolverAbi, await blockchainProvider.callContract(global.ENSController, "resolver", nameHash.hash(nameHash.normalize("dfohub.eth"))));
+        dfo.subdomain = await blockchainProvider.callContract(global.dfoHubENSResolver, 'subdomain', dfo.originalAddress);
     } catch(e) {
-        delete dfo.subdomain;
     }
     dfo.ens = `https://${dfo.subdomain ? `${dfo.subdomain}.` : ''}dfohub.eth`;
 }

@@ -1,6 +1,6 @@
 {
   "name": "dfo-hub",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "DFOHub SDK",
   "main": "index.js",
   "scripts": {
@@ -15,5 +15,8 @@
   "devDependencies": {
     "browserify": "^16.5.1",
     "uglifyjs": "^2.4.11"
+  },
+  "dependencies": {
+    "eth-ens-namehash": "^2.0.8"
   }
 }
