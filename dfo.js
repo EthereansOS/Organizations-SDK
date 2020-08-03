@@ -249,11 +249,10 @@ async function attachWellKnownData(blockchainProvider, dfo) {
     }
     try {
         dfo.subdomain = await blockchainProvider.callContract(newContract(blockchainProvider, configuration.ENSAbi, configuration.ensAddress), 'subdomain', dfo.originalAddress);
-        dfo.ens = 'https://' + dfo.subdomain + '.dfohub.eth';
     } catch(e) {
         delete dfo.subdomain;
-        delete dfo.ens;
     }
+    dfo.ens = `https://${dfo.subdomain ? `${dfo.subdomain}.` : ''}dfohub.eth`;
 }
 
 function attachGetPastLogs(blockchainProvider, dfo) {
