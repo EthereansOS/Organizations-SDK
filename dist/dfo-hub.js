@@ -549,6 +549,11 @@ module.exports = global.DFOHub = function DFOHub(engine) {
     };
 
     dfoHub.load = async function load(address, options) {
+        for(var addr of (await dfoHub.proxy).options.allAddresses) {
+            if(address.toLowerCase() === addr.toLowerCase()) {
+                return await DFO(blockchainProvider, address, options).asPromise;
+            }
+        }
         if((await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address_indexed,address,address)', topics: [blockchainProvider.sha3(address)]})).length === 0) {
             var found = false;
             for(var log of await dfoHub.getPastLogs({event: 'DFODeployed(address_indexed,address)'})) {
