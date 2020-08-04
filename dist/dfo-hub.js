@@ -220,15 +220,24 @@ async function loadProxy(blockchainProvider, address, allAddresses) {
         }
         proxy.options.votingTokenAddress = proxy.options.delegatesAddresses[0];
     } catch(e) {
+        proxy.options.votingTokenAddress = undefined;
     }
 
     if(proxy.options.votingTokenAddress === global.voidEthereumAddress) {
         try {
             proxy.options.votingTokenAddress = await blockchainProvider.callContract(proxy, 'getToken');
         } catch (e) {
+            proxy.options.votingTokenAddress = undefined;
         }
     }
-    if(proxy.options.votingTokenAddress === global.voidEthereumAddress) {
+
+    try {
+        proxy.options.votingTokenAddress && await blockchainProvider.callContract(newContract(blockchainProvider, configuration.votingTokenAbi, proxy.options.votingTokenAddress), "name");
+    } catch(e) {
+        proxy.options.votingTokenAddress = undefined;
+    }
+
+    if(!proxy.options.votingTokenAddress || proxy.options.votingTokenAddress === global.voidEthereumAddress) {
         var logs = await blockchainProvider.getPastLogs({
             address,
             topics: [
