@@ -1,6 +1,6 @@
 {
   "name": "dfo-hub",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "DFOHub SDK",
   "main": "index.js",
   "scripts": {

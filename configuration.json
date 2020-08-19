@@ -7,7 +7,7 @@
     "defaultOcelotTokenAddressRopsten": "0x6ae6cf934b2bd8c84d932aee75102ca2ef1bf2ce",
     "singleTokenLength" : 23000,
     "dfoHubAddress": "0xc3BE549499f1e504c793a6c89371Bd7A98229500",
-    "dfoHubAddressRopsten": "0x761E02FEC5A21C6d3F284bd536dB2D2d33d5540B",
+    "dfoHubAddressRopsten": "0x5a7902D397b84Aacb54Fef4b6A38d94146A7bb9a",
     "ensAddress": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     "deploySearchStart": 9779603,
     "deploySearchStartRopsten": 7465062,
